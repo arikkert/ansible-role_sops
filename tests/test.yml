@@ -1,0 +1,6 @@
+---
+- name: All plays should be named
+  hosts: localhost
+  remote_user: root
+  roles:
+    - ansible-role_sops

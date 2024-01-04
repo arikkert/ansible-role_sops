@@ -13,6 +13,7 @@ Role Variables
 --------------
 
 parameter variable
+
     user: this a user that will be configured for this role so SOPS with AGE
 
     age_public_key: public key for AGE

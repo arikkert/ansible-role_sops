@@ -13,10 +13,10 @@ Role Variables
 --------------
 
 parameter variable
-user: this a user that will be configured for this role so SOPS with AGE
+    user: this a user that will be configured for this role so SOPS with AGE
 
-age_public_key: public key for AGE
-age_private_key: private (secret) key for AGE
+    age_public_key: public key for AGE
+    age_private_key: private (secret) key for AGE
 
 On https://devops.datenkollektiv.de/using-sops-with-age-and-git-like-a-pro.html is explained how to create the keypair
 

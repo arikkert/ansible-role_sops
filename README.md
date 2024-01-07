@@ -14,7 +14,9 @@ Role Variables
 
 parameter variable
 
-    user: this a user that will be configured for this role so SOPS with AGE
+    user: this a user that will be configured for this role, so SOPS with AGE. The keys are part of this config
+
+group_vars or host_vars:
 
     age_public_key: public key for AGE
     age_private_key: private (secret) key for AGE
@@ -35,6 +37,11 @@ Including an example of how to use your role (for instance, with variables passe
       roles:
          - { role: ansible-role_sops, user: docker }
 
+Example Usage of SOPS executable
+--------------------------------
+
+sops README.sops	# creates/edits README.sops and encrypt it with the AGE key
+
 License
 -------
 
@@ -44,7 +51,3 @@ Author Information
 ------------------
 
 ARK-ICT
-
-usage na install:
-
-sops LEESME.sops	# maakt/edit dit bestandje en encrypt die met de AGE key

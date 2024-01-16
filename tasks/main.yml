@@ -14,6 +14,7 @@
     state: directory
     owner: "{{ owner }}"
     group: "{{ group }}"
+    mode: "0755"
 - name: Ensure age/sops keys file is installed
   ansible.builtin.template:
     src: user/.config/sops/age/{{ item }}.j2

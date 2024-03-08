@@ -35,12 +35,14 @@ Including an example of how to use your role (for instance, with variables passe
 
     - hosts: docker
       roles:
-         - { role: ansible-role_sops, user: docker }
+        - role: ansible-role_sops
+          vars:
+            user: docker
 
 Example Usage of SOPS executable
 --------------------------------
 
-sops README.sops	# creates/edits README.sops and encrypt it with the AGE key
+sops SECRETSTUFF.sops	# creates/edits SECRETSTUFF.sops and encrypt it with the AGE key
 
 License
 -------
@@ -50,4 +52,5 @@ BSD
 Author Information
 ------------------
 
-ARK-ICT
+    ARK-ICT
+    Andre Rikkert de Koe - ICT

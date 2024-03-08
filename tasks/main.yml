@@ -1,13 +1,6 @@
 ---
 # tasks file for ansible-role_sops
 
-- name: Ensure target OS is suitable
-  ansible.builtin.assert:
-    that:
-      - ansible_os_family == __ansible_os_family
-      - ansible_distribution_major_version | int >= __ansible_distribution_major_version
-    fail_msg: "Playbook only suitable for distro {{ __ansible_os_family }} major version {{ __ansible_distribution_major_version }}"
-    success_msg: "Ok we're good"
 - name: Ensure dest dir exists
   ansible.builtin.file:
     path: /home/{{ user }}/.config/sops/age/
@@ -33,12 +26,21 @@
     group: "{{ group }}"
   loop:
     - .sops.yaml
-- name: Ensure Secrets OPerationS (SOPS) is installed
+# https://api.github.com/repos/mozilla/sops/releases/latest
+- name: Ensure Secrets OPerationS (SOPS) is installed (for RedHat OS family)
   ansible.builtin.yum:
     name: "{{ item }}"
     disable_gpg_check: true
   loop:
     - https://github.com/getsops/sops/releases/download/v3.8.1/sops-3.8.1.x86_64.rpm
+  when: ansible_os_family == 'RedHat'
+- name: Ensure Secrets OPerationS (SOPS) is installed (for Debian OS family)
+  ansible.builtin.apt:
+    deb: "{{ item }}"
+    # disable_gpg_check: true
+  loop:
+    - https://github.com/getsops/sops/releases/download/v3.8.1/sops_3.8.1_amd64.deb
+  when: ansible_os_family == 'Debian'
 
 - name: Debug
   ansible.builtin.debug:

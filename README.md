@@ -39,6 +39,19 @@ Including an example of how to use your role (for instance, with variables passe
           vars:
             user: docker
 
+Example for 2 users on FreeBSD target host using the FreeBSD port building system
+
+    - hosts: freebsd
+      roles:
+        - role: ansible-role_sops
+          vars:
+            user: kube01
+            use_packages: false
+        - role: ansible-role_sops
+          vars:
+            user: kube02
+            use_packages: false
+
 Example Usage of SOPS executable
 --------------------------------
 

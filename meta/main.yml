@@ -1,4 +1,5 @@
 ---
+allow_duplicates: true # to allow multiple users (cause currently user is a scalar and not a list)
 galaxy_info:
   role_name: "sops"
   author: Andre Rikkert de Koe

@@ -1,6 +1,9 @@
 ---
 # tasks file for ansible-role_sops
 
+- name: Ensure debug info is shown
+  ansible.builtin.debug:
+    msg: Processing user {{ user }} on OS family {{ ansible_os_family }}
 - name: Ensure dest dir exists
   ansible.builtin.file:
     path: /home/{{ user }}/.config/sops/age/
@@ -41,6 +44,10 @@
   loop:
     - https://github.com/getsops/sops/releases/download/v3.8.1/sops_3.8.1_amd64.deb
   when: ansible_os_family == 'Debian'
+- name: Ensure Secrets OPerationS (SOPS) is installed (for FreeBSD OS family)
+  community.general.portinstall:
+    name: security/sops
+    use_packages: "{{ use_packages }}"
 
 - name: Debug
   ansible.builtin.debug:

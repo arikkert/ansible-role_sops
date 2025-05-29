@@ -2,3 +2,4 @@
 # defaults file for ansible-role_sops
 owner: "{{ user }}"
 group: "{{ user }}"
+use_packages: true # only used for FreeBSD

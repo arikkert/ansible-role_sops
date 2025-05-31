@@ -48,6 +48,7 @@
   community.general.portinstall:
     name: security/sops
     use_packages: "{{ use_packages }}"
+  when: ansible_os_family == 'FreeBSD'
 
 - name: Debug
   ansible.builtin.debug:

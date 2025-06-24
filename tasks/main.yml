@@ -55,17 +55,17 @@
       when: dnf_result.failed
       block:
 
-        - name: Get latest SOPS release data
+        - name: Ensure latest SOPS release URL is registered
           ansible.builtin.uri:
             url: https://api.github.com/repos/mozilla/sops/releases/latest
             return_content: true
           register: sops_release
 
-        - name: Set SOPS x86_64 .rpm URL
+        - name: Ensure SOPS x86_64 .rpm URL is set in variable
           ansible.builtin.set_fact:
             sops_dnf_url: "{{ sops_release.json.assets | selectattr('name', 'search', 'x86_64\\.rpm$') | map(attribute='browser_download_url') | first }}"
 
-        - name: Ensure filename is in var
+        - name: Ensure SOPS x86_64 .rpm filename is set in variable
           ansible.builtin.set_fact:
             sops_filename: "{{ sops_dnf_url | urlsplit('path') | basename }}"
 
@@ -106,17 +106,17 @@
       when: apt_result.failed
       block:
 
-        - name: Get latest SOPS release data
+        - name: Ensure latest SOPS release URL is registered
           ansible.builtin.uri:
             url: https://api.github.com/repos/mozilla/sops/releases/latest
             return_content: true
           register: sops_release
 
-        - name: Set SOPS amd64 .deb URL
+        - name: Ensure SOPS amd64 .deb URL is set in variable
           ansible.builtin.set_fact:
             sops_deb_url: "{{ sops_release.json.assets | selectattr('name', 'search', 'amd64\\.deb$') | map(attribute='browser_download_url') | first }}"
 
-        - name: Ensure filename is in var
+        - name: Ensure SOPS amd64 .deb filename is set in variable
           ansible.builtin.set_fact:
             sops_filename: "{{ sops_deb_url | urlsplit('path') | basename }}"
 

@@ -4,6 +4,7 @@
 - name: Ensure debug info is shown
   ansible.builtin.debug:
     msg: Processing user {{ user }} on OS family {{ ansible_os_family }}
+
 - name: Ensure dest dir exists
   ansible.builtin.file:
     path: /home/{{ user }}/.config/sops/age/
@@ -11,6 +12,7 @@
     owner: "{{ owner }}"
     group: "{{ group }}"
     mode: "0755"
+
 - name: Ensure age/sops keys file is installed
   ansible.builtin.template:
     src: user/.config/sops/age/{{ item }}.j2
@@ -20,6 +22,7 @@
     group: "{{ group }}"
   loop:
     - keys.txt
+
 - name: Ensure sops config yaml file is installed (op zich niet secret, maar doe maar 0400)
   ansible.builtin.template:
     src: user/{{ item }}.j2
@@ -29,21 +32,112 @@
     group: "{{ group }}"
   loop:
     - .sops.yaml
-# https://api.github.com/repos/mozilla/sops/releases/latest
-- name: Ensure Secrets OPerationS (SOPS) is installed (for RedHat OS family)
-  ansible.builtin.yum:
-    name: "{{ item }}"
-    disable_gpg_check: true
-  loop:
-    - https://github.com/getsops/sops/releases/download/v3.8.1/sops-3.8.1.x86_64.rpm
+
+#
+# SOPS package RedHat
+#
+
+- name: Ensure package is installed for RedHat OS family
   when: ansible_os_family == 'RedHat'
-- name: Ensure Secrets OPerationS (SOPS) is installed (for Debian OS family)
-  ansible.builtin.apt:
-    deb: "{{ item }}"
-    # disable_gpg_check: true
-  loop:
-    - https://github.com/getsops/sops/releases/download/v3.8.1/sops_3.8.1_amd64.deb
+  block:
+
+    # TODO: use block rescue instead of checking regsitered status code
+
+    # Prefer to install from OS repo
+    - name: Ensure package is installed from package manager for RedHat OS family
+      ansible.builtin.yum:
+        name: sops
+      register: dnf_result
+      ignore_errors: true
+
+    # if not possible use the specific repo
+    - name: Ensure package is installed from github URL for OS family RedHat
+      when: dnf_result.failed
+      block:
+
+        - name: Get latest SOPS release data
+          ansible.builtin.uri:
+            url: https://api.github.com/repos/mozilla/sops/releases/latest
+            return_content: true
+          register: sops_release
+
+        - name: Set SOPS x86_64 .rpm URL
+          ansible.builtin.set_fact:
+            sops_dnf_url: "{{ sops_release.json.assets | selectattr('name', 'search', 'x86_64\\.rpm$') | map(attribute='browser_download_url') | first }}"
+
+        - name: Ensure filename is in var
+          ansible.builtin.set_fact:
+            sops_filename: "{{ sops_dnf_url | urlsplit('path') | basename }}"
+
+        - name: Debug
+          ansible.builtin.debug:
+            msg:
+              - sops_deb_url: "{{ sops_dnf_url }}"
+              - sops_filename: "{{ sops_filename }}"
+
+        # TODO: install from URL instead of downloading first and then install from local filesystem
+        - name: Ensure RedHat package is downloaded
+          ansible.builtin.get_url:
+            url: "{{ sops_dnf_url }}"
+            dest: /tmp/{{ sops_filename }}
+            mode: "0644"
+
+        - name: Ensure Secrets OPerationS (SOPS) is installed (for RedHat OS family)
+          ansible.builtin.dnf:
+            name: /tmp/{{ sops_filename }}
+            # disable_gpg_check: true
+
+#
+# SOPS package Debian
+#
+
+- name: Ensure package is installed for Debian OS family
   when: ansible_os_family == 'Debian'
+  block:
+
+    - name: Ensure package is installed from package manager for Debian OS family
+      ansible.builtin.apt:
+        name: sops
+      register: apt_result
+      ignore_errors: true
+      when: ansible_os_family == 'Debian'
+
+    - name: Ensure package is installed from github URL for OS family Debian
+      when: apt_result.failed
+      block:
+
+        - name: Get latest SOPS release data
+          ansible.builtin.uri:
+            url: https://api.github.com/repos/mozilla/sops/releases/latest
+            return_content: true
+          register: sops_release
+
+        - name: Set SOPS amd64 .deb URL
+          ansible.builtin.set_fact:
+            sops_deb_url: "{{ sops_release.json.assets | selectattr('name', 'search', 'amd64\\.deb$') | map(attribute='browser_download_url') | first }}"
+
+        - name: Ensure filename is in var
+          ansible.builtin.set_fact:
+            sops_filename: "{{ sops_deb_url | urlsplit('path') | basename }}"
+
+        - name: Debug
+          ansible.builtin.debug:
+            msg:
+              - sops_deb_url: "{{ sops_deb_url }}"
+              - sops_filename: "{{ sops_filename }}"
+
+        - name: Ensure debian package is downloaded
+          ansible.builtin.get_url:
+            url: "{{ sops_deb_url }}"
+            dest: /tmp/{{ sops_filename }}
+            mode: "0644"
+
+        - name: Ensure Secrets OPerationS (SOPS) is installed (for Debian OS family)
+          ansible.builtin.apt:
+            deb: /tmp/{{ sops_filename }}
+            # disable_gpg_check: true
+          when: ansible_os_family == 'Debian'
+
 - name: Ensure Secrets OPerationS (SOPS) is installed (for FreeBSD OS family)
   community.general.portinstall:
     name: security/sops
